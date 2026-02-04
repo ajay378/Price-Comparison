@@ -6,29 +6,64 @@ import jinja2
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# CSS for Highlighting Buttons and Hiding Sidebar
+# --- CUSTOM CSS FOR STYLING & BACKGROUND ---
 st.markdown("""
     <style>
+        /* Modern Tech Gradient Background */
+        .stApp {
+            background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+            color: white;
+        }
+
+        /* Hide Sidebar, Header & Footer */
         [data-testid="stSidebar"] {display: none;}
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
-        
-        /* Buttons Highlight */
+
+        /* Navbar & Content Container */
+        .main-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Highlighted Navigation Buttons */
         .stButton>button {
             width: 100%;
-            border-radius: 5px;
-            height: 3em;
-            background-color: #002366;
-            color: white;
-            border: 2px solid #FFD700;
-            font-weight: bold;
+            border-radius: 10px;
+            height: 3.5em;
+            background-color: #FFD700; /* Gold */
+            color: #001f3f;
+            border: none;
+            font-weight: 800;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .stButton>button:hover {
-            background-color: #FFD700;
-            color: #002366;
-            border: 2px solid #002366;
+            background-color: #ffffff;
+            color: #001f3f;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
         }
+
+        /* Product Card Styling */
+        .product-box {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        h1, h2, h3 { color: #FFD700 !important; }
+        p, li { font-size: 18px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -43,51 +78,39 @@ def load_manual_products():
     except Exception as e:
         return []
 
-# --- TOP NAVIGATION BAR (HTML for Logo) ---
-NAV_HTML = """
-<div style="
-    background-color: #002366;
-    padding: 15px 50px;
-    display: flex;
-    align-items: center;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
-    border-radius: 10px;
-    margin-bottom: 20px;
-">
-    <div style="background: #FFD700; color: #002366; padding: 5px 12px; border-radius: 6px; font-weight: 900; margin-right: 15px;">PCS</div>
-    <span style="font-size: 24px; font-weight: 600;">Price-Comparison System</span>
-</div>
-"""
-st.components.v1.html(NAV_HTML, height=80)
+# --- TOP BRANDING (No Redirects) ---
+st.markdown("""
+    <div style="background: rgba(255,215,0,0.1); padding: 20px; border-radius: 15px; border-left: 10px solid #FFD700; margin-bottom: 30px;">
+        <h1 style="margin:0; font-size: 35px;">📊 Price-Comparison System</h1>
+        <p style="margin:0; color: #ccc;">The ultimate electronics deal finder</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# --- NAVIGATION LOGIC ---
+# --- NAVIGATION & SEARCH LOGIC ---
 if 'page' not in st.session_state:
     st.session_state.page = 'Home'
 
-col1, col2, col3, col4 = st.columns([1, 1, 1, 3])
+# Creating 4 columns for Nav Buttons + Search
+n1, n2, n3, n4 = st.columns([1, 1, 1, 3])
 
-with col1:
-    if st.button("🏠 Home"):
-        st.session_state.page = 'Home'
-with col2:
-    if st.button("🛠 Services"):
-        st.session_state.page = 'Services'
-with col3:
-    if st.button("ℹ️ About Us"):
-        st.session_state.page = 'About'
-with col4:
-    # Text input for search
-    query = st.text_input("", placeholder="Search electronic products (iPhone, Laptop...)", label_visibility="collapsed")
+with n1:
+    if st.button("🏠 HOME"): st.session_state.page = 'Home'
+with n2:
+    if st.button("🛠 SERVICES"): st.session_state.page = 'Services'
+with n3:
+    if st.button("ℹ️ ABOUT US"): st.session_state.page = 'About'
+with n4:
+    search_query = st.text_input("", placeholder="🔍 Search Products (iPhone, Laptop, etc...)", label_visibility="collapsed")
 
 st.write("---")
 
-# --- PAGE CONTENT ---
+# --- PAGE ROUTING ---
 
 if st.session_state.page == 'About':
-    st.title("About Us")
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    st.title("About the Developers")
     st.markdown("""
-    ### Project Developed By:
+    ### Project Developed By Team:
     1. **Ajay Konda**
     2. **Pranati**
     3. **Sai Keerthana**
@@ -95,43 +118,60 @@ if st.session_state.page == 'About':
     5. **Mani Charan**
     
     ---
-    **Price-Comparison System** is a platform built to provide the best electronics deals across various e-commerce sites.
+    **Vision:** Our mission is to simplify tech shopping by providing a unified platform to compare prices of premium electronics across the major retailers in India.
     """)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'Services':
-    st.title("Our Services")
-    st.error("### ⚠️ Important Notice: We compare electronics items only.")
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    st.title("Our Specialized Services")
+    st.warning("### 🚨 Policy: We compare electronics items only.")
     st.write("""
-    - **Smart Comparison:** Compare prices between Top E-commerce sites.
-    - **Real-time Data:** Get the latest current prices.
-    - **Tech Focused:** Specialized only in Gadgets and Electronics.
+    We specialize in:
+    * **Real-time Price Comparison** for Smartphones & Laptops.
+    * **Direct Redirects** to verified retailers.
+    * **Clean Ad-free Experience** for quick shopping.
     """)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-else: # Home Page Logic (Pure Home Style)
-    if query:
-        st.subheader(f"Search Results for: '{query}'")
+else:
+    # --- HOME / SEARCH RESULTS ---
+    if search_query:
         all_products = load_manual_products()
-        filtered = [p for p in all_products if query.lower() in p.get('name', '').lower()]
+        filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
         
         if filtered:
+            st.subheader(f"Found {len(filtered)} results for '{search_query}'")
             cols = st.columns(3)
             for idx, product in enumerate(filtered):
                 with cols[idx % 3]:
-                    st.image(product.get('image', ''), use_container_width=True)
-                    st.markdown(f"**{product.get('name')}**")
-                    st.markdown(f"#### ₹{product.get('cur_price')}")
-                    st.caption(f"Site: {product.get('site_name')}")
-                    st.link_button("View Deal", product.get('link'))
+                    st.markdown('<div class="product-box">', unsafe_allow_html=True)
+                    # Check if product image exists
+                    if product.get('image'):
+                        st.image(product.get('image'), use_container_width=True)
+                    st.write(f"**{product.get('name')}**")
+                    st.markdown(f"<h2 style='color: #e63946 !important;'>₹{product.get('cur_price')}</h2>", unsafe_allow_html=True)
+                    st.caption(f"Source: {product.get('site_name')}")
+                    st.link_button(f"Go to {product.get('site_name')}", product.get('link'))
+                    st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.warning("No electronics found for this search.")
+            st.error("No electronic items found. Please try searching for something else like 'iPhone' or 'Macbook'.")
     else:
-        # Puran wala home page style
+        # PURE HOME PAGE
+        st.markdown('<div class="main-card" style="text-align: center;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
-        st.markdown("""
-        #### Track smart. Spend wise.
-        Enter a product name in the search bar above to see the best electronics prices!
+        st.write("### Track smart. Spend wise.")
         
-        ---
-        *Manual catalog of 50+ electronics products | Powered by Streamlit*
+        # A static illustrative icon instead of an external image to ensure it works
+        st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
+        
+        st.write("""
+        Start your search today and save thousands on your next tech purchase. 
+        We have a catalog of **50+ verified electronic products** waiting for you!
         """)
-        st.image("https://via.placeholder.com/800x300/f8f9fa/002366?text=The+Ultimate+Electronics+Comparison+Hub", use_container_width=True)
+        
+        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above and press Enter.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# Footer info (Optional)
+st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System | Electronics Only</p>", unsafe_allow_html=True)
