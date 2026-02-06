@@ -111,11 +111,11 @@ if st.session_state.page == 'About':
     st.title("About the Developers")
     st.markdown("""
     ### Project Developed By Team:
-    1. **Ajay Konda**
-    2. **Pranati**
-    3. **Sai Keerthana**
-    4. **Haroon**
-    5. **Mani Charan**
+    1. **K.AJAYKUMAR(TL)**
+    2. **T.PRANATHI**
+    3. **K.SAIKEERTHANA**
+    4. **MD.HAROON**
+    5. **S.MANICHARANREDDY**
     
     ---
     **Vision:** Our mission is to simplify tech shopping by providing a unified platform to compare prices of premium electronics across the major retailers in India.
