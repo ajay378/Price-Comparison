@@ -5,7 +5,7 @@ import os
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# --- CUSTOM CSS ---
+# --- CUSTOM CSS (Strictly Original) ---
 st.markdown("""
     <style>
         .stApp { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; }
@@ -34,21 +34,9 @@ def load_manual_products():
         return []
     except: return []
 
-# --- SESSION STATE & NAVIGATION ---
+# --- NAVIGATION LOGIC ---
 if 'page' not in st.session_state:
     st.session_state.page = 'Home'
-
-def go_home():
-    st.session_state.page = 'Home'
-    st.rerun()
-
-def go_services():
-    st.session_state.page = 'Services'
-    st.rerun()
-
-def go_about():
-    st.session_state.page = 'About'
-    st.rerun()
 
 # --- TOP BRANDING ---
 st.markdown("""
@@ -58,26 +46,40 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Navigation
+# Navigation Buttons
 n1, n2, n3, n4 = st.columns([1, 1, 1, 3])
+
 with n1:
-    st.button("🏠 HOME", on_click=go_home)
+    if st.button("🏠 HOME"):
+        st.session_state.page = 'Home'
+        # Force clear everything to fix the button freeze
+        st.query_params.clear() 
+        st.rerun() 
 with n2:
-    st.button("🛠 SERVICES", on_click=go_services)
+    if st.button("🛠 SERVICES"):
+        st.session_state.page = 'Services'
+        st.query_params.clear()
+        st.rerun()
 with n3:
-    st.button("ℹ️ ABOUT US", on_click=go_about)
+    if st.button("ℹ️ ABOUT US"):
+        st.session_state.page = 'About'
+        st.query_params.clear()
+        st.rerun()
 with n4:
-    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed")
+    # Adding a unique key ensures the bar resets when we rerun
+    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed", key="user_search")
 
 st.write("---")
 
-# --- LOGIC ---
+# --- MAIN DISPLAY LOGIC ---
+
+# 1. First priority: Search results
 if search_query:
     all_products = load_manual_products()
     filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
     
     if filtered:
-        st.subheader(f"Found {len(filtered)} items")
+        st.subheader(f"Found {len(filtered)} results for '{search_query}'")
         cols = st.columns(3)
         for idx, product in enumerate(filtered):
             with cols[idx % 3]:
@@ -101,11 +103,11 @@ if search_query:
                 st.link_button(f"Go to {product.get('site_name')}", product.get('link'))
                 st.markdown('</div>', unsafe_allow_html=True)
     else:
-        st.error("No items found.")
+        st.error("No electronic items found.")
 
+# 2. Second priority: Show Page Content only if NO search is happening
 else:
     if st.session_state.page == 'About':
-        st.markdown('<div class="main-card">', unsafe_allow_html=True)
         st.title("About the Developers")
         st.markdown("""
         ### Project Developed By Team:
@@ -114,13 +116,12 @@ else:
         3. **K.SAIKEERTHANA**
         4. **MD.HAROON**
         5. **S.MANICHARANREDDY**
+        
         ---
         **Vision:** Our mission is to simplify tech shopping by providing a unified platform to compare prices of premium electronics across the major retailers in India.
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     elif st.session_state.page == 'Services':
-        st.markdown('<div class="main-card">', unsafe_allow_html=True)
         st.title("Our Specialized Services")
         st.warning("### 🚨 Policy: We compare electronics items only.")
         st.write("""
@@ -129,15 +130,15 @@ else:
         * **Direct Redirects** to verified retailers.
         * **Clean Ad-free Experience** for quick shopping.
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        st.markdown('<div class="main-card" style="text-align: center;">', unsafe_allow_html=True)
+        # HOME PAGE
+        st.markdown('<div style="text-align: center; padding: 30px;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
         st.write("### Track smart. Spend wise.")
         st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
-        st.write("Compare best deals from **Amazon** and **Flipkart**.")
+        st.write("Start your search today and save thousands on your next tech purchase.")
         st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System | Electronics Only</p>", unsafe_allow_html=True)
