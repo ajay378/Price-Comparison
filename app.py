@@ -5,7 +5,7 @@ import os
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# --- CUSTOM CSS ---
+# --- CUSTOM CSS (Wahi original style) ---
 st.markdown("""
     <style>
         .stApp { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; }
@@ -20,7 +20,7 @@ st.markdown("""
             background-color: #FFD700; color: #001f3f; border: none; font-weight: 800;
         }
         h1, h2, h3 { color: #FFD700 !important; }
-        .block-container { padding-top: 1.5rem; }
+        .block-container { padding-top: 1rem; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -34,51 +34,51 @@ def load_manual_products():
         return []
     except: return []
 
-# --- NAVIGATION LOGIC (Fixing the Button Issue) ---
+# --- NAVIGATION LOGIC ---
 if 'page' not in st.session_state:
     st.session_state.page = 'Home'
-if 'search_val' not in st.session_state:
-    st.session_state.search_val = ""
-
-# Functions to handle button clicks and clear search
-def nav_to(page_name):
-    st.session_state.page = page_name
-    st.session_state.search_val = "" # Clear search when button is clicked
 
 # --- TOP BRANDING ---
 st.markdown("""
-    <div style="background: rgba(255,215,0,0.1); padding: 20px; border-radius: 15px; border-left: 10px solid #FFD700; margin-bottom: 25px;">
+    <div style="background: rgba(255,215,0,0.1); padding: 20px; border-radius: 15px; border-left: 10px solid #FFD700; margin-bottom: 30px;">
         <h1 style="margin:0; font-size: 35px;">📊 Price-Comparison System</h1>
         <p style="margin:0; color: #ccc;">The ultimate electronics deal finder</p>
     </div>
 """, unsafe_allow_html=True)
 
-# Navigation Layout
+# Navigation Buttons
 n1, n2, n3, n4 = st.columns([1, 1, 1, 3])
+
 with n1:
-    if st.button("🏠 HOME"): nav_to('Home')
+    if st.button("🏠 HOME"):
+        st.session_state.page = 'Home'
+        st.query_params.clear() # Clear search from URL/State
+        st.rerun() # Force page to fix button freeze
 with n2:
-    if st.button("🛠 SERVICES"): nav_to('Services')
+    if st.button("🛠 SERVICES"):
+        st.session_state.page = 'Services'
+        st.query_params.clear()
+        st.rerun()
 with n3:
-    if st.button("ℹ️ ABOUT US"): nav_to('About')
+    if st.button("ℹ️ ABOUT US"):
+        st.session_state.page = 'About'
+        st.query_params.clear()
+        st.rerun()
 with n4:
-    # Key 'search_val' connects the input to our session state
-    search_query = st.text_input("", value=st.session_state.search_val, placeholder="🔍 Search Products...", label_visibility="collapsed", key="search_input")
-    # Update state when user types
-    if search_query != st.session_state.search_val:
-        st.session_state.search_val = search_query
+    # Key is added here to keep the search bar independent
+    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed", key="main_search")
 
 st.write("---")
 
-# --- DISPLAY LOGIC ---
+# --- MAIN DISPLAY LOGIC ---
 
-# 1. First priority: If user is searching and NOT just clicked a nav button
-if st.session_state.search_val:
+# 1. Search Results (Only show if there is a query)
+if search_query:
     all_products = load_manual_products()
-    filtered = [p for p in all_products if st.session_state.search_val.lower() in p.get('name', '').lower()]
+    filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
     
     if filtered:
-        st.subheader(f"Found {len(filtered)} results for '{st.session_state.search_val}'")
+        st.subheader(f"Found {len(filtered)} results for '{search_query}'")
         cols = st.columns(3)
         for idx, product in enumerate(filtered):
             with cols[idx % 3]:
@@ -87,6 +87,7 @@ if st.session_state.search_val:
                     st.image(product.get('image'), use_container_width=True)
                 st.write(f"**{product.get('name')}**")
                 
+                # Pricing & Rating Data from JSON
                 cur_p = product.get('cur_price', 0)
                 last_p = product.get('last_price', cur_p)
                 drop = product.get('price_drop_per', 0)
@@ -104,9 +105,10 @@ if st.session_state.search_val:
     else:
         st.error("No electronic items found.")
 
-# 2. Second priority: If no search, show the selected page
+# 2. Page Content (Show only if NO search is active)
 else:
     if st.session_state.page == 'About':
+        st.markdown('<div class="main-card">', unsafe_allow_html=True)
         st.title("About the Developers")
         st.markdown("""
         ### Project Developed By Team:
@@ -119,7 +121,10 @@ else:
         ---
         **Vision:** Our mission is to simplify tech shopping by providing a unified platform to compare prices of premium electronics across the major retailers in India.
         """)
+        st.markdown('</div>', unsafe_allow_html=True)
+
     elif st.session_state.page == 'Services':
+        st.markdown('<div class="main-card">', unsafe_allow_html=True)
         st.title("Our Specialized Services")
         st.warning("### 🚨 Policy: We compare electronics items only.")
         st.write("""
@@ -128,14 +133,19 @@ else:
         * **Direct Redirects** to verified retailers.
         * **Clean Ad-free Experience** for quick shopping.
         """)
+        st.markdown('</div>', unsafe_allow_html=True)
+
     else:
         # HOME PAGE
-        st.markdown('<div style="text-align: center; padding: 30px;">', unsafe_allow_html=True)
+        st.markdown('<div class="main-card" style="text-align: center;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
         st.write("### Track smart. Spend wise.")
         st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
-        st.write("Start your search today and save thousands on your next tech purchase.")
-        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above.")
+        st.write("""
+        Start your search today and save thousands on your next tech purchase. <br>
+        We have a catalog of **50+ verified electronic products** waiting for you!
+        """)
+        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above and press Enter.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System | Electronics Only</p>", unsafe_allow_html=True)
