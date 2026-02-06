@@ -5,7 +5,7 @@ import os
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# --- CUSTOM CSS (Only fixing the blank box issue) ---
+# --- CUSTOM CSS ---
 st.markdown("""
     <style>
         .stApp { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; }
@@ -13,14 +13,23 @@ st.markdown("""
             background: white; color: #333; padding: 20px;
             border-radius: 15px; margin-bottom: 20px;
             text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
         }
         .product-box p, .product-box h4, .product-box b, .product-box span { color: #333 !important; }
+        
+        /* TOP DEAL Badge */
+        .badge {
+            position: absolute; top: 10px; right: 10px;
+            background: #e63946; color: white !important;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: 12px; font-weight: bold;
+        }
+
         .stButton>button {
             width: 100%; border-radius: 10px; height: 3.5em;
             background-color: #FFD700; color: #001f3f; border: none; font-weight: 800;
         }
         h1, h2, h3 { color: #FFD700 !important; }
-        /* Removing white blank boxes and extra space */
         .block-container { padding-top: 1rem; }
         div[data-testid="stVerticalBlock"] > div:empty { display: none; }
     </style>
@@ -36,9 +45,7 @@ def load_manual_products():
         return []
     except: return []
 
-# --- NAVIGATION LOGIC ---
-if 'page' not in st.session_state:
-    st.session_state.page = 'Home'
+if 'page' not in st.session_state: st.session_state.page = 'Home'
 
 # --- TOP BRANDING ---
 st.markdown("""
@@ -48,14 +55,13 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Navigation Buttons
+# Navigation with Icons
 n1, n2, n3, n4 = st.columns([1, 1, 1, 3])
-
 with n1:
     if st.button("🏠 HOME"):
         st.session_state.page = 'Home'
-        st.query_params.clear() 
-        st.rerun() 
+        st.query_params.clear()
+        st.rerun()
 with n2:
     if st.button("🛠 SERVICES"):
         st.session_state.page = 'Services'
@@ -67,13 +73,11 @@ with n3:
         st.query_params.clear()
         st.rerun()
 with n4:
-    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed", key="my_search_bar")
+    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed", key="search_bar_v3")
 
 st.write("---")
 
 # --- DISPLAY LOGIC ---
-
-# 1. Search Results (Priority)
 if search_query:
     all_products = load_manual_products()
     filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
@@ -84,13 +88,19 @@ if search_query:
         for idx, product in enumerate(filtered):
             with cols[idx % 3]:
                 st.markdown('<div class="product-box">', unsafe_allow_html=True)
+                
+                # Top Deal Icon Logic
+                drop = product.get('price_drop_per', 0)
+                if drop > 40:
+                    st.markdown('<span class="badge">🔥 TOP DEAL</span>', unsafe_allow_html=True)
+                
                 if product.get('image'):
                     st.image(product.get('image'), use_container_width=True)
+                
                 st.write(f"**{product.get('name')}**")
                 
                 cur_p = product.get('cur_price', 0)
                 last_p = product.get('last_price', cur_p)
-                drop = product.get('price_drop_per', 0)
                 rating = product.get('rating', 'N/A')
                 rev_count = product.get('ratingCount', 0)
 
@@ -104,9 +114,8 @@ if search_query:
                 st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.error("No items found.")
-
-# 2. Page Content (Original)
 else:
+    # Pages (Original Content)
     if st.session_state.page == 'About':
         st.title("About the Developers")
         st.markdown("""
@@ -117,7 +126,6 @@ else:
         4. **MD.HAROON**
         5. **S.MANICHARANREDDY**
         """)
-
     elif st.session_state.page == 'Services':
         st.title("Our Specialized Services")
         st.warning("### 🚨 Policy: We compare electronics items only.")
@@ -127,11 +135,7 @@ else:
         * **Direct Redirects** to verified retailers.
         * **Clean Ad-free Experience** for quick shopping.
         """)
-
     else:
-        # HOME PAGE
         st.markdown('<div style="text-align: center; padding: 30px;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
-        st.write("### Track smart. Spend wise.")
-        st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
-        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above.")
+        st.write("
