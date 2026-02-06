@@ -149,8 +149,33 @@ else:
                     # Check if product image exists
                     if product.get('image'):
                         st.image(product.get('image'), use_container_width=True)
+                    
                     st.write(f"**{product.get('name')}**")
-                    st.markdown(f"<h2 style='color: #e63946 !important;'>₹{product.get('cur_price')}</h2>", unsafe_allow_html=True)
+                    
+                    # --- ADDED: PRICE, RATING, & DROP LOGIC ---
+                    cur_p_str = str(product.get('cur_price', '0')).replace(',', '')
+                    old_p_str = str(product.get('original_price', cur_p_str)).replace(',', '')
+                    
+                    try:
+                        cur_p = float(cur_p_str)
+                        old_p = float(old_p_str)
+                        drop = int(((old_p - cur_p) / old_p) * 100) if old_p > cur_p else 0
+                    except:
+                        drop = 0
+
+                    # Display Price
+                    st.markdown(f"<h2 style='color: #e63946 !important; margin: 0;'>₹{product.get('cur_price')}</h2>", unsafe_allow_html=True)
+                    
+                    # Display Price Drop (if any)
+                    if drop > 0:
+                        st.markdown(f"<p style='color: green; font-size: 14px; margin: 0;'><b>{drop}% OFF</b> <span style='text-decoration: line-through; color: #888;'>₹{product.get('original_price')}</span></p>", unsafe_allow_html=True)
+                    
+                    # Display Rating & Reviews
+                    rating = product.get('rating', 'N/A')
+                    reviews = product.get('review_count', '0')
+                    st.markdown(f"<p style='color: #555; font-size: 14px; margin-top: 5px;'>⭐ {rating} | 👥 {reviews} reviews</p>", unsafe_allow_html=True)
+                    # --- END OF ADDED LOGIC ---
+
                     st.caption(f"Source: {product.get('site_name')}")
                     st.link_button(f"Go to {product.get('site_name')}", product.get('link'))
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -166,7 +191,7 @@ else:
         st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
         
         st.write("""
-        Start your search today and save thousands on your next tech purchase. 
+        Start your search today and save thousands on your next tech purchase. <br>
         We have a catalog of **50+ verified electronic products** waiting for you!
         """)
         
