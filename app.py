@@ -138,4 +138,9 @@ else:
     else:
         st.markdown('<div style="text-align: center; padding: 30px;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
-        st.write("
+        st.write("### Track smart. Spend wise.")
+        st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
+        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System</p>", unsafe_allow_html=True)
