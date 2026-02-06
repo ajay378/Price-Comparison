@@ -5,22 +5,32 @@ import os
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# --- CUSTOM CSS (Strictly Original) ---
+# --- CLEAN CSS (Removing Blank Boxes & Extra Gaps) ---
 st.markdown("""
     <style>
         .stApp { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; }
+        
+        /* Product Card Fix */
         .product-box {
-            background: white; color: #333; padding: 20px;
-            border-radius: 15px; margin-bottom: 20px;
-            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            background: white; color: #333; padding: 15px;
+            border-radius: 12px; margin: 0px;
+            text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            height: 100%;
         }
-        .product-box p, .product-box h4, .product-box b, .product-box span { color: #333 !important; }
+        
+        .product-box p, .product-box h4, .product-box b { color: #333 !important; margin: 2px 0; }
+        
+        /* Navigation Buttons */
         .stButton>button {
-            width: 100%; border-radius: 10px; height: 3.5em;
+            width: 100%; border-radius: 8px; height: 3em;
             background-color: #FFD700; color: #001f3f; border: none; font-weight: 800;
         }
-        h1, h2, h3 { color: #FFD700 !important; }
-        .block-container { padding-top: 1rem; }
+        
+        /* Removing extra white space at the top */
+        .block-container { padding-top: 1.5rem; padding-bottom: 0rem; }
+        
+        /* Hiding empty streamlit elements */
+        div[data-testid="stVerticalBlock"] > div:empty { display: none; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -34,111 +44,75 @@ def load_manual_products():
         return []
     except: return []
 
-# --- NAVIGATION LOGIC ---
-if 'page' not in st.session_state:
-    st.session_state.page = 'Home'
+# --- NAVIGATION ---
+if 'page' not in st.session_state: st.session_state.page = 'Home'
 
-# --- TOP BRANDING ---
-st.markdown("""
-    <div style="background: rgba(255,215,0,0.1); padding: 20px; border-radius: 15px; border-left: 10px solid #FFD700; margin-bottom: 30px;">
-        <h1 style="margin:0; font-size: 35px;">📊 Price-Comparison System</h1>
-        <p style="margin:0; color: #ccc;">The ultimate electronics deal finder</p>
-    </div>
-""", unsafe_allow_html=True)
+# Header
+st.markdown('<h1 style="color: #FFD700; margin-bottom: 0;">📊 Price-Comparison System</h1>', unsafe_allow_html=True)
+st.markdown('<p style="color: #ccc; margin-top: 0;">Verified Amazon & Flipkart Deals</p>', unsafe_allow_html=True)
 
-# Navigation Buttons
+# Menu
 n1, n2, n3, n4 = st.columns([1, 1, 1, 3])
-
 with n1:
-    if st.button("🏠 HOME"):
+    if st.button("HOME"):
         st.session_state.page = 'Home'
-        # Force clear everything to fix the button freeze
-        st.query_params.clear() 
-        st.rerun() 
+        st.query_params.clear()
+        st.rerun()
 with n2:
-    if st.button("🛠 SERVICES"):
+    if st.button("SERVICES"):
         st.session_state.page = 'Services'
         st.query_params.clear()
         st.rerun()
 with n3:
-    if st.button("ℹ️ ABOUT US"):
+    if st.button("ABOUT US"):
         st.session_state.page = 'About'
         st.query_params.clear()
         st.rerun()
 with n4:
-    # Adding a unique key ensures the bar resets when we rerun
-    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed", key="user_search")
+    search_query = st.text_input("", placeholder="🔍 Search Electronics...", label_visibility="collapsed", key="clean_search")
 
-st.write("---")
+st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
 
-# --- MAIN DISPLAY LOGIC ---
-
-# 1. First priority: Search results
+# --- MAIN LOGIC ---
 if search_query:
     all_products = load_manual_products()
     filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
     
     if filtered:
-        st.subheader(f"Found {len(filtered)} results for '{search_query}'")
+        st.markdown(f"### Results for '{search_query}'")
         cols = st.columns(3)
         for idx, product in enumerate(filtered):
             with cols[idx % 3]:
-                st.markdown('<div class="product-box">', unsafe_allow_html=True)
-                if product.get('image'):
-                    st.image(product.get('image'), use_container_width=True)
-                st.write(f"**{product.get('name')}**")
-                
+                # Data Prep
                 cur_p = product.get('cur_price', 0)
                 last_p = product.get('last_price', cur_p)
                 drop = product.get('price_drop_per', 0)
-                rating = product.get('rating', 'N/A')
-                rev_count = product.get('ratingCount', 0)
-
-                st.markdown(f"<h2 style='color: #e63946 !important; margin:0;'>₹{cur_p:,}</h2>", unsafe_allow_html=True)
-                if drop > 0:
-                    st.markdown(f"<p style='color: green; margin:0;'><b>{drop}% OFF</b> <s>₹{last_p:,}</s></p>", unsafe_allow_html=True)
                 
-                st.markdown(f"<p style='margin-top:5px;'>⭐ {rating} | 👥 {rev_count:,} reviews</p>", unsafe_allow_html=True)
-                st.caption(f"Source: {product.get('site_name')}")
-                st.link_button(f"Go to {product.get('site_name')}", product.get('link'))
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Clean Card (No extra divs)
+                st.markdown(f'''
+                    <div class="product-box">
+                        <img src="{product.get('image')}" style="width:100%; border-radius:8px;">
+                        <h4 style="font-size:14px;">{product.get('name')[:45]}...</h4>
+                        <h2 style="color:#d62828; margin:5px 0;">₹{cur_p:,}</h2>
+                        <p style="color:green; font-size:12px;"><b>{drop}% OFF</b> <s>₹{last_p:,}</s></p>
+                        <p style="font-size:12px;">⭐ {product.get('rating')} | {product.get('site_name')}</p>
+                    </div>
+                ''', unsafe_allow_html=True)
+                st.link_button(f"GO TO {product.get('site_name').upper()}", product.get('link'))
     else:
-        st.error("No electronic items found.")
+        st.error("No items found.")
 
-# 2. Second priority: Show Page Content only if NO search is happening
 else:
+    # Pages
     if st.session_state.page == 'About':
         st.title("About the Developers")
-        st.markdown("""
-        ### Project Developed By Team:
-        1. **K.AJAYKUMAR(TL)**
-        2. **T.PRANATHI**
-        3. **K.SAIKEERTHANA**
-        4. **MD.HAROON**
-        5. **S.MANICHARANREDDY**
-        
-        ---
-        **Vision:** Our mission is to simplify tech shopping by providing a unified platform to compare prices of premium electronics across the major retailers in India.
-        """)
-
+        st.write("1. K.AJAYKUMAR (TL)\n2. T.PRANATHI\n3. K.SAIKEERTHANA\n4. MD.HAROON\n5. S.MANICHARANREDDY")
     elif st.session_state.page == 'Services':
         st.title("Our Specialized Services")
-        st.warning("### 🚨 Policy: We compare electronics items only.")
-        st.write("""
-        We specialize in:
-        * **Real-time Price Comparison** for all Premium Electronics.
-        * **Direct Redirects** to verified retailers.
-        * **Clean Ad-free Experience** for quick shopping.
-        """)
-
+        st.warning("Policy: Electronics only.")
+        st.write("* Price Comparison\n* Retailer Redirects\n* Ad-free Experience")
     else:
-        # HOME PAGE
-        st.markdown('<div style="text-align: center; padding: 30px;">', unsafe_allow_html=True)
         st.title("Welcome to Price-Comparison System")
-        st.write("### Track smart. Spend wise.")
-        st.markdown("<h1 style='font-size: 100px;'>🛒📱💻</h1>", unsafe_allow_html=True)
-        st.write("Start your search today and save thousands on your next tech purchase.")
-        st.info("💡 **How to use:** Simply type the name of a gadget in the search bar above.")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.info("Use the search bar to find deals.")
 
-st.markdown("<p style='text-align: center; color: #777;'>© 2026 Price-Comparison System | Electronics Only</p>", unsafe_allow_html=True)
+st.markdown("<br><p style='text-align: center; color: #777;'>© 2026 Price-Comparison System</p>", unsafe_allow_html=True)
