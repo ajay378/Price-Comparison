@@ -69,4 +69,42 @@ if st.session_state.page == 'About':
 elif st.session_state.page == 'Services':
     st.markdown('<div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px;">', unsafe_allow_html=True)
     st.title("Our Specialized Services")
-    st.write("* Real-time Price Comparison\n
+    # Yahan pe error tha, maine quotes band kar diye hain
+    st.write("* Real-time Price Comparison\n* Price Drop Analysis\n* Verified Direct Links")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+else:
+    if search_query:
+        all_products = load_manual_products()
+        filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
+        
+        if filtered:
+            cols = st.columns(3)
+            for idx, product in enumerate(filtered):
+                with cols[idx % 3]:
+                    st.markdown('<div class="product-box">', unsafe_allow_html=True)
+                    
+                    if product.get('image'):
+                        st.image(product.get('image'), use_container_width=True)
+                    
+                    st.markdown(f"<h5 style='color: #333;'>{product.get('name')[:50]}...</h5>", unsafe_allow_html=True)
+                    
+                    cur_p = product.get('cur_price', 0)
+                    last_p = product.get('last_price', cur_p)
+                    rating = product.get('rating', 'N/A')
+                    rev_count = product.get('ratingCount', 0)
+                    
+                    if last_p > cur_p:
+                        drop_per = round(((last_p - cur_p) / last_p) * 100)
+                    else:
+                        drop_per = 0
+
+                    st.markdown(f"<h2 style='color: #e63946; margin: 0;'>₹{cur_p:,}</h2>", unsafe_allow_html=True)
+                    
+                    if drop_per > 0:
+                        st.markdown(f"<p style='color: green; font-size: 14px; margin: 0;'><b>🔥 {drop_per}% OFF</b> <span style='text-decoration: line-through; color: #888;'>₹{last_p:,}</span></p>", unsafe_allow_html=True)
+                    
+                    st.markdown(f"<p style='color: #444; font-size: 14px; margin: 5px 0;'>⭐ {rating} | 👥 {rev_count:,} reviews</p>", unsafe_allow_html=True)
+                    st.markdown("<div style='background: #d4edda; color: #155724; padding: 5px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-bottom: 10px;'>✓ VERIFIED GENUINE</div>", unsafe_allow_html=True)
+                    
+                    st.link_button(f"Go to {product.get('site_name')}", product.get('link'), use_container_
