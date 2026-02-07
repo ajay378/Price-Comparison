@@ -15,12 +15,12 @@ st.markdown("""
             background: white; color: #333; padding: 20px;
             border-radius: 15px; margin-bottom: 20px;
             text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            min-height: 520px; /* Sab elements fit hone ke liye height badhayi hai */
+            min-height: 550px;
             display: flex; flex-direction: column; justify-content: space-between;
         }
         h1, h2, h3 { color: #FFD700 !important; }
         .stButton>button {
-            background-color: #FFD700; color: #001f3f; font-weight: 800;
+            background-color: #FFD700; color: #001f3f; font-weight: 800; border-radius: 10px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -55,4 +55,18 @@ with n2:
 with n3:
     if st.button("ℹ️ ABOUT US"): st.session_state.page = 'About'
 with n4:
-    search_query = st.text_input("",
+    search_query = st.text_input("", placeholder="🔍 Search Products...", label_visibility="collapsed")
+
+st.write("---")
+
+# --- PAGE ROUTING ---
+if st.session_state.page == 'About':
+    st.markdown('<div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px;">', unsafe_allow_html=True)
+    st.title("About the Developers")
+    st.markdown("1. **K.AJAYKUMAR(TL)**\n2. **T.PRANATHI**\n3. **K.SAIKEERTHANA**\n4. **MD.HAROON**\n5. **S.MANICHARANREDDY**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif st.session_state.page == 'Services':
+    st.markdown('<div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px;">', unsafe_allow_html=True)
+    st.title("Our Specialized Services")
+    st.write("* Real-time Price Comparison\n
