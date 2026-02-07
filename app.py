@@ -1,33 +1,36 @@
 import streamlit as st
 import json
 import os
-from datetime import datetime
 
 # --- STREAMLIT CONFIG ---
 st.set_page_config(page_title="Price-Comparison System", page_icon="📊", layout="wide")
 
-# --- CUSTOM CSS (Stable Layout) ---
+# --- CUSTOM CSS ---
 st.markdown("""
     <style>
         .stApp { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; }
         [data-testid="stSidebar"] {display: none;}
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
         .main-card {
             background: rgba(255, 255, 255, 0.05);
             padding: 30px; border-radius: 20px;
             backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
         }
+        .stButton>button {
+            width: 100%; border-radius: 10px; height: 3.5em;
+            background-color: #FFD700; color: #001f3f; border: none;
+            font-weight: 800; font-size: 15px; transition: all 0.3s ease;
+        }
+        .stButton>button:hover { background-color: #ffffff; transform: translateY(-3px); }
         .product-box {
             background: white; color: #333; padding: 20px;
             border-radius: 15px; margin-bottom: 20px;
             text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            min-height: 580px; /* Fixed height for consistency */
-            display: flex; flex-direction: column; justify-content: space-between;
         }
         h1, h2, h3 { color: #FFD700 !important; }
-        .stButton>button {
-            background-color: #FFD700; color: #001f3f; font-weight: 800; border-radius: 10px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -39,14 +42,14 @@ def load_manual_products():
             with open(products_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return []
-    except Exception:
+    except Exception as e:
         return []
 
 # --- TOP BRANDING ---
 st.markdown("""
     <div style="background: rgba(255,215,0,0.1); padding: 20px; border-radius: 15px; border-left: 10px solid #FFD700; margin-bottom: 30px;">
         <h1 style="margin:0; font-size: 35px;">📊 Price-Comparison System</h1>
-        <p style="margin:0; color: #ccc;">The ultimate electronics deal finder | <span style="color: #00ff00;">● System Live</span></p>
+        <p style="margin:0; color: #ccc;">The ultimate electronics deal finder</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -75,7 +78,7 @@ if st.session_state.page == 'About':
 elif st.session_state.page == 'Services':
     st.markdown('<div class="main-card">', unsafe_allow_html=True)
     st.title("Our Specialized Services")
-    st.write("* **Real-time Price Comparison:** Aggregating data across top platforms.\n* **Price Drop Analysis:** Mathematical calculation of market trends.\n* **Verified Direct Links:** Direct store access for authenticity.")
+    st.write("* Real-time Price Comparison\n* Direct Redirects\n* Clean Ad-free Experience")
     st.markdown('</div>', unsafe_allow_html=True)
 
 else:
@@ -84,29 +87,38 @@ else:
         filtered = [p for p in all_products if search_query.lower() in p.get('name', '').lower()]
         
         if filtered:
-            st.subheader(f"Found {len(filtered)} results for '{search_query}'")
+            st.subheader(f"Found {len(filtered)} results")
             cols = st.columns(3)
             for idx, product in enumerate(filtered):
                 with cols[idx % 3]:
-                    # Entire product detail wrapped in white box
                     st.markdown('<div class="product-box">', unsafe_allow_html=True)
                     
                     if product.get('image'):
                         st.image(product.get('image'), use_container_width=True)
                     
-                    st.markdown(f"<h5 style='color: #333;'>{product.get('name')[:50]}...</h5>", unsafe_allow_html=True)
+                    st.write(f"**{product.get('name')[:50]}...**")
                     
+                    # --- MAPPING START (Matching your JSON keys) ---
                     cur_p = product.get('cur_price', 0)
                     last_p = product.get('last_price', cur_p)
                     rating = product.get('rating', 'N/A')
-                    rev_count = product.get('ratingCount', 0)
-                    
-                    # Price Drop Logic for Faculty Trust
-                    drop_per = round(((last_p - cur_p) / last_p) * 100) if last_p > cur_p else 0
+                    # Yahan ratingCount use kiya hai jo aapke JSON mein hai
+                    rev_count = product.get('ratingCount', 0) 
+                    drop_per = product.get('price_drop_per', 0)
 
-                    st.markdown(f"<h2 style='color: #e63946; margin: 0;'>₹{cur_p:,}</h2>", unsafe_allow_html=True)
-                    
+                    # Display Price & Drop
+                    st.markdown(f"<h2 style='color: #e63946 !important; margin: 0;'>₹{cur_p:,}</h2>", unsafe_allow_html=True)
                     if drop_per > 0:
-                        st.markdown(f"<p style='color: green; font-size: 14px; margin: 0;'><b>🔥 {drop_per}% OFF</b> <span style='text-decoration: line-through; color: #888;'>₹{last_p:,}</span></p>", unsafe_allow_html=True)
-                    else:
-                        st.markdown(f
+                        st.markdown(f"<p style='color: green; font-size: 14px; margin: 0;'><b>{drop_per}% OFF</b> <span style='text-decoration: line-through; color: #888;'>₹{last_p:,}</span></p>", unsafe_allow_html=True)
+                    
+                    # Display Rating and Review Count
+                    st.markdown(f"<p style='color: #444; font-size: 14px; margin-top: 5px;'>⭐ {rating} | 👥 {rev_count:,} reviews</p>", unsafe_allow_html=True)
+                    # --- MAPPING END ---
+
+                    st.caption(f"Source: {product.get('site_name')}")
+                    st.link_button(f"Go to {product.get('site_name')}", product.get('link'))
+                    st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.error("No items found.")
+    else:
+        st.markdown('<div class="main-card" style="text-align: center;"><h1>🛒📱💻</h1><h3>Track smart. Spend wise.</h3></div>', unsafe_allow_html=True)
